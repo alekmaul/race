@@ -10,8 +10,8 @@ char gameName[512];
 char current_conf_app[MAX__PATH];
 
 unsigned long nextTick, lastTick = 0, newTick, currentTick, wait;
-int FPS = 60; 
-int pastFPS = 0; 
+int FPS = 60;
+int pastFPS = 0;
 
 SDL_Surface *layer,*layerback,*layerbackgrey;
 
@@ -19,7 +19,7 @@ unsigned char system_frameskip_key = 0;
 
 unsigned long SDL_UXTimerRead(void) {
 	struct timeval tval; // timing
-  
+
   	gettimeofday(&tval, 0);
 	return (((tval.tv_sec*1000000) + (tval.tv_usec )));
 }
@@ -31,17 +31,17 @@ void graphics_paint(void) {
 	static char buffer[32];
 
 	if(SDL_MUSTLOCK(actualScreen)) SDL_LockSurface(actualScreen);
-	
-	if (GameConf.m_ScreenRatio) { // Full screen
+
+	if (GameConf.m_ScreenRatio == 2) { // Stretched
 		x=0;
-		y=0; 
+		y=0;
 		W=320;
 		H=240;
 		ix=(SYSVID_WIDTH<<16)/W;
 		iy=(SYSVID_HEIGHT<<16)/H;
 		xfp = 300;yfp = 1;
 
-		do   
+		do
 		{
 			unsigned short *buffer_mem=(buffer_flip+((y>>16)*320));
 			W=320; x=0;
@@ -52,20 +52,45 @@ void graphics_paint(void) {
 			y+=iy;
 		} while (--H);
 	}
-	else { // Original show
+	else if (GameConf.m_ScreenRatio == 1) { // Full screen
+		#define BLIT_FULL_WIDTH (248)
+		#define BLIT_FULL_HEIGHT (240)
+		x=((screen->w - BLIT_FULL_WIDTH)/2);
+		y=((screen->h - BLIT_FULL_HEIGHT)/2);
+		W=BLIT_FULL_WIDTH;
+		H=BLIT_FULL_HEIGHT;
+		ix=(SYSVID_WIDTH<<16)/W;
+		iy=(SYSVID_HEIGHT<<16)/H;
+		xfp = (x+BLIT_FULL_WIDTH)-20;yfp = y+1;
+
+        buffer_scr += (y)*320;
+		buffer_scr += (x);
+		do
+		{
+			unsigned short *buffer_mem=(buffer_flip+((y>>16)*320));
+			W=BLIT_FULL_WIDTH; x=((screen->w - BLIT_FULL_WIDTH)/2);
+			do {
+				*buffer_scr++=buffer_mem[x>>16];
+				x+=ix;
+			} while (--W);
+			y+=iy;
+			buffer_scr += actualScreen->pitch - 320 - BLIT_FULL_WIDTH;
+		} while (--H);
+    }
+    else { // Original show
 		#define BLIT_WIDTH (160)
 		#define BLIT_HEIGHT (152)
 		x=((screen->w - BLIT_WIDTH)/2);
-		y=((screen->h - BLIT_HEIGHT)/2); 
+		y=((screen->h - BLIT_HEIGHT)/2);
 		W=BLIT_WIDTH;
 		H=BLIT_HEIGHT;
 		ix=(BLIT_WIDTH<<16)/W;
 		iy=(SYSVID_HEIGHT<<16)/H;
 		xfp = (x+BLIT_WIDTH)-20;yfp = y+1;
-		
+
 		buffer_scr += (y)*320;
 		buffer_scr += (x);
-		do   
+		do
 		{
 			unsigned short *buffer_mem=(buffer_flip+((y>>16)*320));
 			W=BLIT_WIDTH; x=((screen->w - BLIT_WIDTH)/2);
@@ -77,7 +102,7 @@ void graphics_paint(void) {
 			buffer_scr += actualScreen->pitch - 320 - BLIT_WIDTH;
 		} while (--H);
 	}
-	
+
 	pastFPS++;
 	newTick = SDL_UXTimerRead();
 	if ((newTick-lastTick)>1000000) {
@@ -90,7 +115,7 @@ void graphics_paint(void) {
 		sprintf(buffer,"%02d",FPS);
 		print_string_video(xfp,yfp,buffer);
 	}
-		
+
 	if (SDL_MUSTLOCK(actualScreen)) SDL_UnlockSurface(actualScreen);
 	SDL_Flip(actualScreen);
 
@@ -118,7 +143,7 @@ void initSDL(void) {
                                 actualScreen->format->Gmask,
                                 actualScreen->format->Bmask,
                                 actualScreen->format->Amask);
-								
+
 	if(screen == NULL) {
 		fprintf(stderr, "Couldn't create surface: %s\n", SDL_GetError());
 		exit(1);
@@ -150,11 +175,11 @@ int main(int argc, char *argv[]) {
 	// Get init file directory & name
 	getcwd(current_conf_app, MAX__PATH);
 	sprintf(current_conf_app,"%s//race.cfg",current_conf_app);
-	
+
 	// Init graphics & sound
 	initSDL();
 	sound_system_init();
-	
+
 	m_Flag = GF_MAINUI;
 	system_loadcfg(current_conf_app);
 
@@ -191,35 +216,35 @@ int main(int argc, char *argv[]) {
 				nextTick = SDL_UXTimerRead() + interval;
 				SDL_PauseAudio(0);
 				break;
-		
+
 			case GF_GAMERUNNING:
-				currentTick = SDL_UXTimerRead(); 
+				currentTick = SDL_UXTimerRead();
 				wait = (nextTick - currentTick);
 				if (wait > 0) {
-					if (wait < 1000000) 
+					if (wait < 1000000)
 						usleep(wait);
 				}
-				
+
 				tlcs_execute((6*1024*1024) / HOST_FPS);
-				
-				if (m_bIsActive == FALSE) 
+
+				if (m_bIsActive == FALSE)
 					m_Flag = GF_MAINUI;
 				nextTick += interval;
 				break;
 		}
 	}
 	SDL_PauseAudio(1);
-	
+
 	// Free memory
 	SDL_FreeSurface(layerbackgrey);
 	SDL_FreeSurface(layerback);
 	SDL_FreeSurface(layer);
 	SDL_FreeSurface(screen);
 	SDL_FreeSurface(actualScreen);
-	
+
 	// Free memory
 	SDL_QuitSubSystem(SDL_INIT_VIDEO|SDL_INIT_AUDIO);
-	
+
 	exit(0);
 }
 

@@ -181,7 +181,7 @@ typedef struct {
 } MENU;
 
 char mnuYesNo[2][16] = {"no", "yes"};
-char mnuRatio[2][16] = { "Original show","Full screen"};
+char mnuRatio[3][16] = {"Original show", "Full screen", "Stretched"};
 
 char mnuButtons[7][16] = {
   "Up","Down","Left","Right","But #1","But #2", "Options"
@@ -191,7 +191,7 @@ MENUITEM MainMenuItems[] = {
 	{"Load rom", NULL, 0, NULL, &menuFileBrowse},
 	{"Continue", NULL, 0, NULL, &menuContinue},
 	{"Reset", NULL, 0, NULL, &menuReset},
-	{"Ratio: ", (int *) &GameConf.m_ScreenRatio, 1, (char *) &mnuRatio, NULL},
+	{"Ratio: ", (int *) &GameConf.m_ScreenRatio, 2, (char *) &mnuRatio, NULL},
 	{"Button Settings", NULL, 0, NULL, &screen_showkeymenu},
 	{"Take Screenshot", NULL, 0, NULL, &menuSaveBmp},
 	{"Show FPS: ", (int *) &GameConf.m_DisplayFPS, 1,(char *) &mnuYesNo, NULL},
@@ -314,7 +314,7 @@ void screen_showitem(int x, int y, MENUITEM *m, int fg_color) {
 void screen_showmenu(MENU *menu) {
 	int i;
 	MENUITEM *mi = menu->m;
-	
+
 	// clear buffer
 	SDL_BlitSurface(layerbackgrey, 0, layer, 0);
 
@@ -336,7 +336,7 @@ void screen_prepback(SDL_Surface *s, unsigned char *bmpBuf, unsigned int bmpSize
 	SDL_Surface *image;
 	image = SDL_DisplayFormat(temp);
 	SDL_FreeSurface(temp);
-	
+
 	// Display image
  	SDL_BlitSurface(image, 0, s, 0);
 	SDL_FreeSurface(image);
@@ -351,7 +351,7 @@ void screen_prepbackground(void) {
 // wait for a key
 void screen_waitkey(void) {
 	bool akey=false;
-		
+
 	while (!akey) {
 		while(SDL_PollEvent(&event)) {
 			if(event.type == SDL_KEYDOWN)
@@ -362,7 +362,7 @@ void screen_waitkey(void) {
 
 void screen_waitkeyarelease(void) {
 	unsigned char *keys;
-		
+
 	// wait key release and go in menu
 	while (1) {
 		SDL_PollEvent(&event);
@@ -397,13 +397,13 @@ void screen_showmainmenu(MENU *menu) {
 	while(gameMenu) {
 		SDL_PollEvent(&event);
 		keys = SDL_GetKeyState(NULL);
-		
+
 		mi = menu->m + menu->itemCur; // pointer to highlit menu option
 
 		// A - apply parameter or enter submenu
-		if (keys[SDLK_LCTRL] == SDL_PRESSED) { 
+		if (keys[SDLK_LCTRL] == SDL_PRESSED) {
 			if (!keya) {
-				keya = 1; 
+				keya = 1;
 				screen_waitkeyarelease();
 				if (mi->itemOnA != NULL) (*mi->itemOnA)();
 			}
@@ -411,7 +411,7 @@ void screen_showmainmenu(MENU *menu) {
 		else keya=0;
 
 		// B - exit or back to previous menu
-		if (keys[SDLK_LALT] == SDL_PRESSED) { 
+		if (keys[SDLK_LALT] == SDL_PRESSED) {
 			if (!keyb) {
 				keyb = 1; if (menu != &mnuMainMenu) gameMenu = false;
 			}
@@ -419,7 +419,7 @@ void screen_showmainmenu(MENU *menu) {
 		else keyb=0;
 
 		// UP - arrow up
-		if (keys[SDLK_UP] == SDL_PRESSED) { 
+		if (keys[SDLK_UP] == SDL_PRESSED) {
 			if (!keyup) {
 				keyup = 1; if(--menu->itemCur < 0) menu->itemCur = menu->itemNum - 1;
 			}
@@ -430,7 +430,7 @@ void screen_showmainmenu(MENU *menu) {
 		else keyup=0;
 
 		//DOWN - arrow down
-		if (keys[SDLK_DOWN] == SDL_PRESSED) { 
+		if (keys[SDLK_DOWN] == SDL_PRESSED) {
 			if (!keydown) {
 				keydown = 1; if(++menu->itemCur == menu->itemNum) menu->itemCur = 0;
 			}
@@ -441,7 +441,7 @@ void screen_showmainmenu(MENU *menu) {
 		else keydown=0;
 
 		// LEFT - decrease parameter value
-		if (keys[SDLK_LEFT] == SDL_PRESSED) { 
+		if (keys[SDLK_LEFT] == SDL_PRESSED) {
 			if (!keyleft) {
 				keyleft = 1; if(mi->itemPar != NULL && *mi->itemPar > 0) *mi->itemPar -= 1;
 				// big hack for key conf
@@ -456,7 +456,7 @@ void screen_showmainmenu(MENU *menu) {
 		else keyleft=0;
 
 		// RIGHT - increase parameter value
-		if (keys[SDLK_RIGHT] == SDL_PRESSED) { 
+		if (keys[SDLK_RIGHT] == SDL_PRESSED) {
 			if (!keyright) {
 				keyright = 1; if(mi->itemPar != NULL && *mi->itemPar < mi->itemParMaxValue) *mi->itemPar += 1;
 			}
@@ -471,12 +471,12 @@ void screen_showmainmenu(MENU *menu) {
 			if (menu == &mnuMainMenu) {
 				if (cartridge_IsLoaded()) {
 #ifdef _OPENDINGUX_
-					sprintf(szVal,"Game:%s",strrchr(gameName,'/')+1);szVal[(320/6)-2] = '\0'; 
+					sprintf(szVal,"Game:%s",strrchr(gameName,'/')+1);szVal[(320/6)-2] = '\0';
 #else
-					sprintf(szVal,"Game:%s",strrchr(gameName,'\\')+1);szVal[(320/6)-2] = '\0'; 
+					sprintf(szVal,"Game:%s",strrchr(gameName,'\\')+1);szVal[(320/6)-2] = '\0';
 #endif
 					print_string(szVal, COLOR_LIGHT,COLOR_BG, 8,240-2-10-10);
-					sprintf(szVal,"CRC:%08X",gameCRC); 
+					sprintf(szVal,"CRC:%08X",gameCRC);
 					print_string(szVal, COLOR_LIGHT, COLOR_BG,8,240-2-10);
 					if (isSta) print_string("Load state available",COLOR_INFO, COLOR_BG,8+104,240-2-10);
 				}
@@ -504,13 +504,20 @@ void screen_showtopmenu(void) {
 	// save actual config
 	system_savecfg(current_conf_app);
 
-	// if no ratio, put skin
-	if (!GameConf.m_ScreenRatio) {
+	// if original size, put skin
+	if (GameConf.m_ScreenRatio == 0) {
 		screen_prepback(actualScreen, RACE_SKIN, RACE_SKIN_SIZE);
 		SDL_Flip(actualScreen);
 		screen_prepback(actualScreen, RACE_SKIN, RACE_SKIN_SIZE);
 		SDL_Flip(actualScreen);
 	}
+    // blackscreen if fullscreen
+    else if (GameConf.m_ScreenRatio == 1) {
+        SDL_FillRect(actualScreen, NULL, 0x000000);
+		SDL_Flip(actualScreen);
+        SDL_FillRect(actualScreen, NULL, 0x000000);
+		SDL_Flip(actualScreen);
+    }
 }
 
 //----------------------------------------------------------------------
@@ -518,7 +525,7 @@ int system_is_load_state(void) {
 	char name[512];
 	int fd;
 	int n=0;
-  
+
 	strcpy(name, gameName);
 	strcpy(strrchr(name, '.'), ".sta");
 
@@ -527,15 +534,15 @@ int system_is_load_state(void) {
 		n = 1;
 		close(fd);
 	}
-	
+
 	return (n ? 1 : 0);
 }
 
-// find a filename for bmp or state saving 
+// find a filename for bmp or state saving
 void findNextFilename(char *szFileFormat, char *szFilename) {
 	uint32_t uBcl;
 	int fp;
-  
+
 	for (uBcl = 0; uBcl<999; uBcl++) {
 		sprintf(szFilename,szFileFormat,uBcl);
 		fp = open(szFilename,O_RDONLY | O_BINARY);
@@ -587,17 +594,17 @@ filedirtype filedir_list[MAX_FILES];
 int sort_function(const void *src_str_ptr, const void *dest_str_ptr) {
   filedirtype *p1 = (filedirtype *) src_str_ptr;
   filedirtype *p2 = (filedirtype *) dest_str_ptr;
-  
+
   return strcmp (p1->name, p2->name);
 }
 
 int strcmp_function(char *s1, char *s2) {
 	char c,i;
-	
+
 	if (strlen(s1) != strlen(s2)) return 1;
 
 	for(i=0; i<strlen(s1); i++) {
-		if (toupper(s1[i]) != toupper(s2[i])) 
+		if (toupper(s1[i]) != toupper(s2[i]))
 			return 1;
     }
 	return 0;
@@ -627,7 +634,7 @@ signed int load_file(char **wildcards, char *result) {
 	unsigned int current_filedir_selection;
 	unsigned int current_filedir_in_scroll;
 	unsigned int current_filedir_number;
-	
+
 	// Init dir with saved one
 	strcpy(current_dir_name,GameConf.current_dir_rom);
 	chdir(GameConf.current_dir_rom);
@@ -638,10 +645,10 @@ signed int load_file(char **wildcards, char *result) {
 		current_filedir_number = 0;
 		current_filedir_selection = 0;
 		num_filedir = 0;
-		
+
 		getcwd(current_dir_name, MAX__PATH);
 		current_dir = opendir(current_dir_name);
-		
+
 		do {
 			if(current_dir) current_file = readdir(current_dir); else current_file = NULL;
 
@@ -654,7 +661,7 @@ signed int load_file(char **wildcards, char *result) {
 						filedir_list[num_filedir].type = 1; // 1 -> directory
 						strcpy(filedir_list[num_filedir].name, file_name);
 						num_filedir++;
-						
+
 					} else {
 						// Must match one of the wildcards, also ignore the .
 						if(file_name_length >= 4) {
@@ -709,7 +716,7 @@ signed int load_file(char **wildcards, char *result) {
 					else {
 						strncpy(print_buffer+1,filedir_list[current_filedir_number].name, CHARLEN-1);
 						print_buffer[0] = '[';
-						if (strlen(filedir_list[current_filedir_number].name)<(CHARLEN-1)) 
+						if (strlen(filedir_list[current_filedir_number].name)<(CHARLEN-1))
 							print_buffer[strlen(filedir_list[current_filedir_number].name)+1] = ']';
 						else
 							print_buffer[CHARLEN-1] = ']';
@@ -728,9 +735,9 @@ signed int load_file(char **wildcards, char *result) {
 			keys = SDL_GetKeyState(NULL);
 
 			// A - choose file or enter directory
-			if (keys[SDLK_LCTRL] == SDL_PRESSED) { 
+			if (keys[SDLK_LCTRL] == SDL_PRESSED) {
 				if (!keya) {
-					keya = 1; 
+					keya = 1;
 					screen_waitkeyarelease();
 					if (filedir_list[current_filedir_selection].type == 1)  { // so it's a directory
 						repeat = 0;
@@ -750,9 +757,9 @@ signed int load_file(char **wildcards, char *result) {
 			else keya=0;
 
 			// B - exit or back to previous menu
-			if (keys[SDLK_LALT] == SDL_PRESSED) { 
+			if (keys[SDLK_LALT] == SDL_PRESSED) {
 				if (!keyb) {
-					keyb = 1; 
+					keyb = 1;
 					return_value = -1;
 					repeat = 0;
 				}
@@ -760,9 +767,9 @@ signed int load_file(char **wildcards, char *result) {
 			else keyb=0;
 
 			// UP - arrow up
-			if (keys[SDLK_UP] == SDL_PRESSED) { 
+			if (keys[SDLK_UP] == SDL_PRESSED) {
 				if (!keyup) {
-					keyup = 1; 
+					keyup = 1;
 					if(current_filedir_selection) {
 						current_filedir_selection--;
 						if(current_filedir_in_scroll == 0) {
@@ -774,15 +781,15 @@ signed int load_file(char **wildcards, char *result) {
 				}
 				else {
 					keyup++; if (keyup>kepufl) keyup=0;
-					if (kepufl>2) kepufl--; 
+					if (kepufl>2) kepufl--;
 				}
 			}
 			else { keyup=0; kepufl = 8; }
 
 			//DOWN - arrow down
-			if (keys[SDLK_DOWN] == SDL_PRESSED) { 
+			if (keys[SDLK_DOWN] == SDL_PRESSED) {
 				if (!keydown) {
-					keydown = 1; 
+					keydown = 1;
 					if(current_filedir_selection < (num_filedir - 1)) {
 						current_filedir_selection++;
 						if(current_filedir_in_scroll == (FILE_LIST_ROWS - 1)) {
@@ -794,13 +801,13 @@ signed int load_file(char **wildcards, char *result) {
 				}
 				else {
 					keydown++; if (keydown>kepdfl) keydown=0;
-					if (kepdfl>2) kepdfl--; 
+					if (kepdfl>2) kepdfl--;
 				}
 			}
 			else { keydown=0;	kepdfl = 8; }
 
 			// R - arrow down from current screen
-			if (keys[SDLK_BACKSPACE] == SDL_PRESSED) { 
+			if (keys[SDLK_BACKSPACE] == SDL_PRESSED) {
 				if (!keyr) {
 					keyr = 1;
 					if ( (current_filedir_selection+FILE_LIST_ROWS) < (num_filedir-1)) {
@@ -813,7 +820,7 @@ signed int load_file(char **wildcards, char *result) {
 			else keyr = 0;
 
 			// L - arrow up from current screen
-			if (keys[SDLK_TAB] == SDL_PRESSED) { 
+			if (keys[SDLK_TAB] == SDL_PRESSED) {
 				if (!keyl) {
 					keyl = 1;
 					if (current_filedir_selection> FILE_LIST_ROWS-1) {
@@ -834,7 +841,7 @@ signed int load_file(char **wildcards, char *result) {
 	if (return_value != -1) {
 		strcpy(GameConf.current_dir_rom,current_dir_name);
 	}
-	
+
 	return return_value;
 }
 
@@ -850,7 +857,7 @@ void menuFileBrowse(void) {
 // Take a screenshot of current game
 void menuSaveBmp(void) {
     char szFile[512], szFile1[512];
-	
+
 	if (cartridge_IsLoaded()) {
 #ifdef _OPENDINGUX_
 		sprintf(szFile,"./%s",strrchr(gameName,'/')+1);
@@ -879,7 +886,7 @@ void menuSaveBmp(void) {
 // Save current state of game emulated
 void menuSaveState(void) {
     char szFile[512];
-	
+
 	if (cartridge_IsLoaded()) {
 		strcpy(szFile, gameName);
 		strcpy(strrchr(szFile, '.'), ".sta");
@@ -894,7 +901,7 @@ void menuSaveState(void) {
 // Load current state of game emulated
 void menuLoadState(void) {
     char szFile[512];
-	
+
 	if (cartridge_IsLoaded()) {
 		strcpy(szFile, gameName);
 		strcpy(strrchr(szFile, '.'), ".sta");
@@ -921,7 +928,7 @@ void system_loadcfg(char *cfg_name) {
   if (fd >= 0) {
 	read(fd, &GameConf, sizeof(GameConf));
     close(fd);
-	if (!GameConf.m_ScreenRatio) {
+	if (GameConf.m_ScreenRatio == 0) {
 		screen_prepback(actualScreen, RACE_SKIN, RACE_SKIN_SIZE);
 		SDL_Flip(actualScreen);
 		screen_prepback(actualScreen, RACE_SKIN, RACE_SKIN_SIZE);
@@ -937,9 +944,9 @@ void system_loadcfg(char *cfg_name) {
 		GameConf.OD_Joy[ 6] = 4;  GameConf.OD_Joy[ 7] = 5;
 		GameConf.OD_Joy[ 8] = 4;  GameConf.OD_Joy[ 9] = 5;
 		GameConf.OD_Joy[10] = 6;  GameConf.OD_Joy[11] = 6;
-	   
+
 		GameConf.sndLevel=40;
-		GameConf.m_ScreenRatio=1; // 0 = original show, 1 = full screen
+		GameConf.m_ScreenRatio=1; // 0 = original show, 1 = full screen, 2 = stretched
 		GameConf.m_DisplayFPS=1; // 0 = no
 		getcwd(GameConf.current_dir_rom, MAX__PATH);
 	}
@@ -947,10 +954,10 @@ void system_loadcfg(char *cfg_name) {
 
 void system_savecfg(char *cfg_name) {
   int fd;
-  
+
   fd = open(cfg_name, O_CREAT | O_RDWR | O_BINARY | O_TRUNC, S_IREAD | S_IWRITE);
   if (fd >= 0) {
-    write(fd, &GameConf, sizeof(GameConf)); 
+    write(fd, &GameConf, sizeof(GameConf));
     close(fd);
  }
 }
