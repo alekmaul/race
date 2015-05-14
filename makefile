@@ -6,14 +6,14 @@ OSTYPE=msys
 PRGNAME     = race-od
 
 # define regarding OS, which compiler to use
-ifeq "$(OSTYPE)" "msys"	
+ifeq "$(OSTYPE)" "msys"
 EXESUFFIX = .exe
 TOOLCHAIN = /c/MinGW32
 CC          = gcc
 CCP         = g++
 LD          = g++
 else
-ifeq "$(OSTYPE)" "oda320"	
+ifeq "$(OSTYPE)" "oda320"
 TOOLCHAIN = /opt/opendingux-toolchain/usr
 else
 TOOLCHAIN = /opt/gcw0-toolchain/usr
@@ -29,11 +29,11 @@ SDL_LIB     = $(TOOLCHAIN)/lib
 SDL_INCLUDE = $(TOOLCHAIN)/include
 
 # change compilation / linking flag options
-ifeq "$(OSTYPE)" "msys"	
+ifeq "$(OSTYPE)" "msys"
 F_OPTS = -fpermissive -fno-exceptions -fno-rtti
 CC_OPTS = -O2 -g $(F_OPTS)
 CFLAGS = -I$(SDL_INCLUDE) -DZ80 -DTARGET_OD -D_MAX_PATH=2048 -DHOST_FPS=60 -DNOUNCRYPT $(CC_OPTS)
-CXXFLAGS=$(CFLAGS) 
+CXXFLAGS=$(CFLAGS)
 LDFLAGS     = -L$(SDL_LIB) -lmingw32 -lSDLmain -lSDL -lz -mwindows
 else
 F_OPTS = -falign-functions -falign-loops -falign-labels -falign-jumps \
@@ -47,7 +47,7 @@ else
 CC_OPTS		= -O2 -mips32 -mhard-float -G0 -DNOUNCRYPT  $(F_OPTS)
 endif
 CFLAGS		= -I$(SDL_INCLUDE) -D_OPENDINGUX_ -DZ80 -DTARGET_OD -D_MAX_PATH=2048 -DHOST_FPS=60 $(CC_OPTS)
-CXXFLAGS	= $(CFLAGS) 
+CXXFLAGS	= $(CFLAGS)
 LDFLAGS		= -L$(SDL_LIB) $(CC_OPTS) -lSDL -lz
 endif
 
@@ -61,8 +61,8 @@ OBJ_CP   = $(notdir $(patsubst %.cpp, %.o, $(SRC_CP)))
 OBJS     = $(OBJ_C) $(OBJ_CP)
 
 # Rules to make executable
-$(PRGNAME)$(EXESUFFIX): $(OBJS)  
-ifeq "$(OSTYPE)" "msys"	
+$(PRGNAME)$(EXESUFFIX): $(OBJS)
+ifeq "$(OSTYPE)" "msys"
 	$(LD) $(CFLAGS) -o $(PRGNAME)$(EXESUFFIX) $^ $(LDFLAGS)
 else
 	$(LD) $(LDFLAGS) -o $(PRGNAME)$(EXESUFFIX) $^

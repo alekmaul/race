@@ -36,7 +36,7 @@
 
 // Race dependencies
 extern EMUINFO		m_emuInfo;
-extern unsigned char mainrom[];	
+extern unsigned char mainrom[];
 extern void writeSaveGameFile();
 
 #define cartridge_IsLoaded() (m_emuInfo.romSize != 0)
