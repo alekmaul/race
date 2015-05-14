@@ -181,7 +181,7 @@ typedef struct {
 } MENU;
 
 char mnuYesNo[2][16] = {"no", "yes"};
-char mnuRatio[2][16] = { "Original show","Full screen"};
+char mnuRatio[3][16] = {"Original show", "Full screen", "Stretched"};
 
 char mnuButtons[7][16] = {
   "Up","Down","Left","Right","But #1","But #2", "Options"
@@ -191,7 +191,7 @@ MENUITEM MainMenuItems[] = {
 	{"Load rom", NULL, 0, NULL, &menuFileBrowse},
 	{"Continue", NULL, 0, NULL, &menuContinue},
 	{"Reset", NULL, 0, NULL, &menuReset},
-	{"Ratio: ", (int *) &GameConf.m_ScreenRatio, 1, (char *) &mnuRatio, NULL},
+	{"Ratio: ", (int *) &GameConf.m_ScreenRatio, 2, (char *) &mnuRatio, NULL},
 	{"Button Settings", NULL, 0, NULL, &screen_showkeymenu},
 	{"Take Screenshot", NULL, 0, NULL, &menuSaveBmp},
 	{"Show FPS: ", (int *) &GameConf.m_DisplayFPS, 1,(char *) &mnuYesNo, NULL},
@@ -505,7 +505,7 @@ void screen_showtopmenu(void) {
 	system_savecfg(current_conf_app);
 
 	// if original size, put skin
-	if (!GameConf.m_ScreenRatio) {
+	if (GameConf.m_ScreenRatio == 0) {
 		screen_prepback(actualScreen, RACE_SKIN, RACE_SKIN_SIZE);
 		SDL_Flip(actualScreen);
 		screen_prepback(actualScreen, RACE_SKIN, RACE_SKIN_SIZE);
@@ -921,7 +921,7 @@ void system_loadcfg(char *cfg_name) {
   if (fd >= 0) {
 	read(fd, &GameConf, sizeof(GameConf));
     close(fd);
-	if (!GameConf.m_ScreenRatio) {
+	if (GameConf.m_ScreenRatio == 0) {
 		screen_prepback(actualScreen, RACE_SKIN, RACE_SKIN_SIZE);
 		SDL_Flip(actualScreen);
 		screen_prepback(actualScreen, RACE_SKIN, RACE_SKIN_SIZE);
@@ -939,7 +939,7 @@ void system_loadcfg(char *cfg_name) {
 		GameConf.OD_Joy[10] = 6;  GameConf.OD_Joy[11] = 6;
 
 		GameConf.sndLevel=40;
-		GameConf.m_ScreenRatio=1; // 0 = original show, 1 = full screen
+		GameConf.m_ScreenRatio=1; // 0 = original show, 1 = full screen, 2 = stretched
 		GameConf.m_DisplayFPS=1; // 0 = no
 		getcwd(GameConf.current_dir_rom, MAX__PATH);
 	}

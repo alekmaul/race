@@ -43,7 +43,7 @@ extern void writeSaveGameFile();
 
 typedef struct {
   unsigned int sndLevel;
-  unsigned int m_ScreenRatio; // 0 = original show, 1 = full screen
+  unsigned int m_ScreenRatio; // 0 = original show, 1 = full screen, 2 = stretched
   unsigned int OD_Joy[12]; // each key mapping
   unsigned int m_DisplayFPS;
   char current_dir_rom[MAX__PATH];

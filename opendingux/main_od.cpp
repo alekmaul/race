@@ -32,7 +32,7 @@ void graphics_paint(void) {
 
 	if(SDL_MUSTLOCK(actualScreen)) SDL_LockSurface(actualScreen);
 
-	if (GameConf.m_ScreenRatio) { // Full screen
+	if (GameConf.m_ScreenRatio == 2) { // Stretched
 		x=0;
 		y=0;
 		W=320;
