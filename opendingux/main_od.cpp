@@ -52,7 +52,32 @@ void graphics_paint(void) {
 			y+=iy;
 		} while (--H);
 	}
-	else { // Original show
+	else if (GameConf.m_ScreenRatio == 1) { // Full screen
+		#define BLIT_FULL_WIDTH (248)
+		#define BLIT_FULL_HEIGHT (240)
+		x=((screen->w - BLIT_FULL_WIDTH)/2);
+		y=((screen->h - BLIT_FULL_HEIGHT)/2);
+		W=BLIT_FULL_WIDTH;
+		H=BLIT_FULL_HEIGHT;
+		ix=(SYSVID_WIDTH<<16)/W;
+		iy=(SYSVID_HEIGHT<<16)/H;
+		xfp = (x+BLIT_FULL_WIDTH)-20;yfp = y+1;
+
+        buffer_scr += (y)*320;
+		buffer_scr += (x);
+		do
+		{
+			unsigned short *buffer_mem=(buffer_flip+((y>>16)*320));
+			W=BLIT_FULL_WIDTH; x=((screen->w - BLIT_FULL_WIDTH)/2);
+			do {
+				*buffer_scr++=buffer_mem[x>>16];
+				x+=ix;
+			} while (--W);
+			y+=iy;
+			buffer_scr += actualScreen->pitch - 320 - BLIT_FULL_WIDTH;
+		} while (--H);
+    }
+    else { // Original show
 		#define BLIT_WIDTH (160)
 		#define BLIT_HEIGHT (152)
 		x=((screen->w - BLIT_WIDTH)/2);
