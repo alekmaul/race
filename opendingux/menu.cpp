@@ -511,6 +511,13 @@ void screen_showtopmenu(void) {
 		screen_prepback(actualScreen, RACE_SKIN, RACE_SKIN_SIZE);
 		SDL_Flip(actualScreen);
 	}
+    // blackscreen if fullscreen
+    else if (GameConf.m_ScreenRatio == 1) {
+        SDL_FillRect(actualScreen, NULL, 0x000000);
+		SDL_Flip(actualScreen);
+        SDL_FillRect(actualScreen, NULL, 0x000000);
+		SDL_Flip(actualScreen);
+    }
 }
 
 //----------------------------------------------------------------------
